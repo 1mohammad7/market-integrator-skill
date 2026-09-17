@@ -14,7 +14,7 @@ An end-to-end integration toolkit, production-ready boilerplate library, and spe
 ## 📖 Table of Contents
 
 - [Overview](#overview)
-- [Quick Start: CLI Scaffolding Command](#quick-start-cli-scaffolding-command)
+- [Skill Commands & Agent Protocols](#skill-commands--agent-protocols)
 - [Market Comparison Matrix](#market-comparison-matrix)
 - [Architecture](#architecture)
 - [Monetization & Product Types](#monetization--product-types)
@@ -34,28 +34,22 @@ An end-to-end integration toolkit, production-ready boilerplate library, and spe
 
 Monetizing Android applications in Iran requires integrating with the two dominant app stores: **CafeBazaar** (>45M users) and **Myket** (>25M users). While both utilize Android IPC (AIDL) under the hood, their client SDKs, manifest package queries, permissions, server REST API endpoints, and authentication schemes differ.
 
-This skill provides:
-1. **Automated CLI Tool (`scripts/integrate-store.js`):** Run a single command to scaffold manifest entries, Proguard rules, dependencies, and backend verification routes into your app.
+This skill equips AI agents and developers with:
+1. **Adaptive Agent Protocols:** Cognitive skill commands (`integrate`, `setup-iab`, `setup-backend`) that intelligently inspect the project stack, detect architecture, and wire store integration idiomatic to the app.
 2. **Unified Client & Server Abstractions:** Write code once; let the unified repository and backend router handle store-specific details.
 3. **AI Agent Skill (`SKILL.md`):** Ready-to-load instructions enabling Antigravity and AI coding agents to autonomously implement, diagnose, and maintain Iranian app store integrations.
 
 ---
 
-## Quick Start: CLI Scaffolding Command
+## Skill Commands & Agent Protocols
 
-You can scaffold store integration files into any project using the built-in CLI tool:
-
-```bash
-# General syntax:
-node scripts/integrate-store.js --store=<cafebazaar|myket|dual> --platform=<android|capacitor|react-native|flutter|nodejs|python> --target-dir=<path>
-
-# Examples:
-# Integrate dual store billing (Bazaar + Myket) into an Android app:
-node scripts/integrate-store.js --store=dual --platform=android --target-dir=./frontend/android
-
-# Integrate unified payment verification into a Node.js backend:
-node scripts/integrate-store.js --store=dual --platform=nodejs --target-dir=./backend
-```
+| Command | Category | Action | Primary Reference |
+|---|---|---|---|
+| `integrate [store] [platform]` | Full-Stack | Inspects existing app and wires full-stack client & server store integration | [references/multi-store-architecture.md](references/multi-store-architecture.md) |
+| `setup-iab [store]` | Client | Implements client-side in-app billing manager and lifecycle listeners | [references/myket-iab-guide.md](references/myket-iab-guide.md) & [references/poolakey-android-guide.md](references/poolakey-android-guide.md) |
+| `setup-backend [framework]` | Backend | Implements server-to-server purchase verification and consumption routes | [references/myket-server-api.md](references/myket-server-api.md) & [references/server-rest-api-v2.md](references/server-rest-api-v2.md) |
+| `setup-updates [store]` | Auxiliary | Adds In-App Update SDK or Version Check service to keep users updated | [references/myket-services-and-intents.md](references/myket-services-and-intents.md) |
+| `audit-store-readiness` | Quality / Sec | Audits manifests, queries, Proguard rules, secrets, and anti-replay indices | [references/security-anti-fraud.md](references/security-anti-fraud.md) |
 
 ---
 
@@ -106,7 +100,7 @@ node scripts/integrate-store.js --store=dual --platform=nodejs --target-dir=./ba
 | Product Type | Persian Term | Multi-Purchase? | Must Consume? | Reinstall Persistence | Common Examples |
 |:---|:---|:---:|:---:|:---:|:---|
 | **Consumable** | محصولات مصرفی | ✅ Unlimited | ✅ **Mandatory** (`consumePurchase`) | ❌ No (consumed immediately) | Coins, gems, credits, hints |
-| **Non-Consumable** | محصولات غیرمصرفی | ❌ Once / account | ❌ **Never consume** | ✅ Yes (`getPurchases`) | Remove Ads, Lifetime Pro |
+| **Non-Consumable** | محصولات غیرمصرفی | ❌ Once / account | ❌ **Never consume** | ✅ Yes (`getPurchasedProducts`) | Remove Ads, Lifetime Pro |
 | **Subscription** | اشتراک دوره‌ای | ❌ 1 active plan / app | ❌ Cannot consume | ✅ Yes (during valid period) | 30/60/90/180/365-day access |
 | **Free Trial** | اشتراک آزمایشی | ❌ Once in user lifetime | ❌ Cannot consume | ✅ Converts to paid | 1 to 30 days trial period |
 
@@ -118,8 +112,6 @@ node scripts/integrate-store.js --store=dual --platform=nodejs --target-dir=./ba
 .
 ├── SKILL.md                                 # Complete Agent Skill Definition & Workflow Guide
 ├── README.md                                # Project overview and developer reference
-├── scripts/
-│   └── integrate-store.js                   # CLI command to integrate stores into projects
 ├── examples/                                # Production-ready code implementations
 │   ├── android-kotlin/
 │   │   ├── BillingRepository.kt             # Poolakey Kotlin wrapper

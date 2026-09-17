@@ -1,6 +1,6 @@
 ---
 name: market-integrator
-description: Complete end-to-end integration guide and CLI toolkit for Iranian Android App Stores (CafeBazaar & Myket). Covers In-App Billing (IAB), Poolakey, Myket IAB, Unified Multi-Store Architecture, Developer REST APIs, Subscriptions, Dynamic Pricing JWT, SnappPay BNPL, In-App Updates, and automated CLI scaffolding.
+description: Complete end-to-end integration guide and agent command toolkit for Iranian Android App Stores (CafeBazaar & Myket). Covers In-App Billing (IAB), Poolakey, Myket IAB, Unified Multi-Store Architecture, Developer REST APIs, Subscriptions, Dynamic Pricing JWT, SnappPay BNPL, In-App Updates, and cognitive agent integration workflows.
 ---
 
 # Market Integrator (راهنمای جامع اتصال به بازارهای ایرانی: کافه‌بازار و مایکت)
@@ -14,58 +14,120 @@ Covers the complete lifecycle of app store publishing and monetization:
 - **Backend REST APIs:** CafeBazaar REST API v2 and Myket Partner Payment & Consumption API.
 - **Store Services:** In-app updates, version check services, store intents (rate/details), and CD deployment.
 - **Advanced Monetization:** Server-signed Dynamic Pricing JWTs and SnappPay BNPL installments.
-- **Automated CLI Scaffolding:** Single-command integration tool (`scripts/integrate-store.js`).
+- **Agent Skill Commands:** Interactive cognitive protocols for inspecting and integrating stores into any existing codebase.
 
 ---
 
 ## Table of Contents
 
-1. [Quick Start CLI Command](#quick-start-cli-command)
-2. [Market Comparison Matrix](#market-comparison-matrix)
-3. [Architecture & Core Concepts](#architecture--core-concepts)
-4. [Monetization Matrix & Product Types](#monetization-matrix--product-types)
-5. [Client-Side Integration](#client-side-integration)
+1. [Skill Commands & Agent Protocols](#skill-commands--agent-protocols)
+2. [Agent Integration Workflow (`integrate`)](#agent-integration-workflow-integrate)
+3. [Market Comparison Matrix](#market-comparison-matrix)
+4. [Architecture & Core Concepts](#architecture--core-concepts)
+5. [Monetization Matrix & Product Types](#monetization-matrix--product-types)
+6. [Client-Side Integration](#client-side-integration)
    - [CafeBazaar (Poolakey SDK)](#1-cafebazaar-poolakey-sdk)
    - [Myket (IabHelper & Plugins)](#2-myket-iab-helper--plugins)
    - [Unified Multi-Store Pattern](#3-unified-multi-store-pattern)
-6. [Backend Server Verification APIs](#backend-server-verification-apis)
+7. [Backend Server Verification APIs](#backend-server-verification-apis)
    - [CafeBazaar REST API v2](#1-cafebazaar-rest-api-v2)
    - [Myket Partner API](#2-myket-partner-api)
    - [Unified Backend Verification Service](#3-unified-backend-verification-service)
-7. [Store Services & Intents](#store-services--intents)
+8. [Store Services & Intents](#store-services--intents)
    - [Version Check & In-App Updates](#1-version-check--in-app-updates)
    - [Store Intents (Rating, Comment, App Page)](#2-store-intents-rating-comment-app-page)
    - [Multi-APK & Gradual Rollouts](#3-multi-apk--gradual-rollouts)
-8. [Advanced Features (Bazaar Dynamic Pricing & SnappPay)](#advanced-features)
-9. [Security & Anti-Fraud Best Practices](#security--anti-fraud-best-practices)
-10. [Error Codes & Diagnostics](#error-codes--diagnostics)
-11. [Skill Resource Index](#skill-resource-index)
+9. [Advanced Features (Bazaar Dynamic Pricing & SnappPay)](#advanced-features)
+10. [Security & Anti-Fraud Best Practices](#security--anti-fraud-best-practices)
+11. [Error Codes & Diagnostics](#error-codes--diagnostics)
+12. [Skill Resource Index](#skill-resource-index)
 
 ---
 
-## Quick Start CLI Command
+## Skill Commands & Agent Protocols
 
-This skill includes an automated integration command located at `scripts/integrate-store.js` that automatically scaffolds store manifests, Proguard rules, dependencies, and backend verification routes into existing projects.
+When collaborating on Iranian app store integrations, the agent uses the following skill commands to guide its execution:
 
-### Command Syntax:
-```bash
-node .agents/skills/market-integrator/scripts/integrate-store.js --store=<cafebazaar|myket|dual> --platform=<android|capacitor|react-native|flutter|nodejs|python> --target-dir=<path>
+| Command | Category | Description | Primary Reference |
+|---|---|---|---|
+| `integrate [store] [platform]` | Full-Stack | Inspects existing app and wires full-stack client & server store integration | [references/multi-store-architecture.md](references/multi-store-architecture.md) |
+| `setup-iab [store]` | Client | Implements client-side in-app billing manager and lifecycle listeners | [references/myket-iab-guide.md](references/myket-iab-guide.md) & [references/poolakey-android-guide.md](references/poolakey-android-guide.md) |
+| `setup-backend [framework]` | Backend | Implements server-to-server purchase verification and consumption routes | [references/myket-server-api.md](references/myket-server-api.md) & [references/server-rest-api-v2.md](references/server-rest-api-v2.md) |
+| `setup-updates [store]` | Auxiliary | Adds In-App Update SDK or Version Check service to keep users updated | [references/myket-services-and-intents.md](references/myket-services-and-intents.md) |
+| `audit-store-readiness` | Quality / Sec | Audits manifests, queries, Proguard rules, secrets, and anti-replay indices | [references/security-anti-fraud.md](references/security-anti-fraud.md) |
+
+---
+
+## Agent Integration Workflow (`integrate`)
+
+When the user asks to **integrate an app store into an existing app**, the agent executes this 6-phase adaptive protocol instead of relying on rigid one-size-fits-all scripts:
+
+```
++-----------------------------------------------------------------------------------+
+|                            COGNITIVE AGENT PROTOCOL                               |
+|                                                                                   |
+|  [Phase 1: Project Discovery]  ---> Inspect stack (Android/Capacitor/RN/Flutter)  |
+|                                     Extract package name, build system & backend  |
+|               |                                                                   |
+|               v                                                                   |
+|  [Phase 2: Strategy Selection] ---> Choose Target: CafeBazaar, Myket, or Dual     |
+|                                     Select Pattern: Build Flavors vs Single APK   |
+|               |                                                                   |
+|               v                                                                   |
+|  [Phase 3: Client Integration] ---> Add <queries> & permissions to Manifest       |
+|                                     Configure Proguard keep rules                 |
+|                                     Generate idiomatic Billing Repository         |
+|                                     Implement startup unconsumed purchases sync   |
+|               |                                                                   |
+|               v                                                                   |
+|  [Phase 4: Backend Gateway]    ---> Scaffold /api/payments/verify endpoint        |
+|                                     Implement HMAC developerPayload validation    |
+|                                     Enforce unique (store, token) in database     |
+|                                     Call Store verification & consumption APIs    |
+|               |                                                                   |
+|               v                                                                   |
+|  [Phase 5: Store Intents]      ---> Wire up rating & update intents with web fallbacks
+|               |                                                                   |
+|               v                                                                   |
+|  [Phase 6: Pre-Flight Audit]   ---> Verify 0 client secrets, Proguard enabled     |
+|                                     Deliver sandbox verification checklist        |
++-----------------------------------------------------------------------------------+
 ```
 
-### Common Command Examples:
-```bash
-# 1. Integrate both CafeBazaar & Myket into an existing Android project:
-node .agents/skills/market-integrator/scripts/integrate-store.js --store=dual --platform=android --target-dir=./frontend/android
+### Phase 1: Project Discovery & Architecture Audit
+1. Inspect project root to detect frontend / mobile framework:
+   - **Native Android:** Check `app/build.gradle` or `build.gradle.kts`. Determine if Kotlin Coroutines/Flows or Java is used.
+   - **Capacitor / Hybrid:** Check `capacitor.config.ts|json` and `android/app/...`.
+   - **React Native / Flutter / Unity:** Check `package.json`, `pubspec.yaml`, or Unity Assets.
+   - **Backend:** Detect Express, NestJS, Fastify, FastAPI, Django, etc.
+2. Read the application `package_name` (e.g. `ir.fitsme.app`).
 
-# 2. Add Myket billing & verification into a Node.js Express backend:
-node .agents/skills/market-integrator/scripts/integrate-store.js --store=myket --platform=nodejs --target-dir=./backend
+### Phase 2: Target Market Strategy
+- **Single Store:** Target either `cafebazaar` or `myket`.
+- **Dual Store (Recommended):** Support both market stores in a unified architecture:
+  - *Pattern A (Build Flavors):* For apps with distinct store branding or strict binary isolation (`bazaarRelease`, `myketRelease`).
+  - *Pattern B (Runtime Installer Detection):* Single universal binary detecting `PackageManager.getInstallerPackageName()`.
 
-# 3. Add CafeBazaar Poolakey into a Capacitor project:
-node .agents/skills/market-integrator/scripts/integrate-store.js --store=cafebazaar --platform=capacitor --target-dir=./frontend
+### Phase 3: Client Implementation
+- **Manifest Updates:** Add required `<queries>` for `com.farsitel.bazaar` and/or `ir.mservices.market`, along with billing permissions.
+- **Proguard Rules:** Add `-keep class com.android.vending.billing.** { *; }` and store-specific SDK keeps.
+- **Billing Repository:** Create an idiomatic billing manager tailored to the detected tech stack (e.g., Kotlin coroutines flow, Capacitor bridge).
+- **Startup Inventory Sync:** Ensure `queryPurchases()` runs on app boot to recover unconsumed "zombie" purchases.
 
-# 4. Auto-detect project platform and setup dual store billing:
-node .agents/skills/market-integrator/scripts/integrate-store.js --store=dual
-```
+### Phase 4: Backend Verification Gateway
+- Implement `/api/payments/verify` accepting `{ store, sku, token, payload, userId }`.
+- Validate `developerPayload` against user session using HMAC to prevent tampering.
+- Prevent replay attacks by checking if `token` exists in database before fulfillment.
+- Call CafeBazaar or Myket REST API out-of-band.
+- Automatically consume consumable purchases upon fulfillment.
+
+### Phase 5: Auxiliary Services
+- Add rate/comment intent dialogs (`bazaar://details?id=...` and `myket://comment?id=...`) with web browser fallback URLs.
+- Integrate In-App Update or Version Check service (`MyketSupportHelper`).
+
+### Phase 6: Pre-Flight Audit
+- Verify that **no developer API secrets, private keys, or tokens** are included in client-side code or git commits.
+- Print an actionable testing checklist (Developer Console configuration, test accounts, sandbox validation).
 
 ---
 
@@ -402,7 +464,7 @@ Allows server-signed dynamic discounts on existing SKUs without panel modificati
 
 - **Guides & Specifications:**
   - [`references/multi-store-architecture.md`](references/multi-store-architecture.md) - Unified architecture, build flavors, runtime detection.
-  - [`references/myket-iab-guide.md`](references/myket-iab-guide.md) - Complete Myket IAB client guide (Android, Flutter, React Native, Unity).
+  - [`references/myket-iab-guide.md`](references/myket-iab-guide.md) - Complete Myket IAB client guide (Android, Flutter, RN, Unity).
   - [`references/myket-server-api.md`](references/myket-server-api.md) - Myket server-to-server REST API specification.
   - [`references/myket-services-and-intents.md`](references/myket-services-and-intents.md) - Version checking, in-app updates, store intents.
   - [`references/poolakey-android-guide.md`](references/poolakey-android-guide.md) - CafeBazaar Poolakey Android guide.
@@ -413,7 +475,6 @@ Allows server-signed dynamic discounts on existing SKUs without panel modificati
   - [`references/troubleshooting-and-faqs.md`](references/troubleshooting-and-faqs.md) - Frequently asked questions.
 
 - **Production Boilerplates:**
-  - [`scripts/integrate-store.js`](scripts/integrate-store.js) - CLI command to integrate app stores.
   - [`examples/android-kotlin/multi-store/MarketBillingRepository.kt`](examples/android-kotlin/multi-store/MarketBillingRepository.kt) - Multi-store Kotlin billing repository.
   - [`examples/backend-nodejs/market-service.js`](examples/backend-nodejs/market-service.js) - Unified Node.js backend validation service.
   - [`examples/backend-nodejs/unified-server-routes.js`](examples/backend-nodejs/unified-server-routes.js) - Unified Express.js payment routes.
