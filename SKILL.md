@@ -1,65 +1,150 @@
 ---
-name: cafebazaar-integrator
-description: Complete end-to-end integration guide and toolkit for CafeBazaar In-App Billing (IAB), Poolakey SDK (Kotlin & Unity), Developer REST API v2, Subscriptions, Dynamic Pricing JWT, SnappPay BNPL, and Server-Side Security Verification.
+name: market-integrator
+description: Complete end-to-end integration guide and CLI toolkit for Iranian Android App Stores (CafeBazaar & Myket). Covers In-App Billing (IAB), Poolakey, Myket IAB, Unified Multi-Store Architecture, Developer REST APIs, Subscriptions, Dynamic Pricing JWT, SnappPay BNPL, In-App Updates, and automated CLI scaffolding.
 ---
 
-# CafeBazaar Integrator (پرداخت درون‌برنامه‌ای بازار)
+# Market Integrator (راهنمای جامع اتصال به بازارهای ایرانی: کافه‌بازار و مایکت)
 
-Comprehensive expert skill for integrating CafeBazaar In-App Billing (IAB) into Android applications (Kotlin/Java, Unity) and backend services (Node.js, Python, Go, Java). Covers the full lifecycle of digital product monetization: Consumables, Non-Consumables, Auto-Renewing Subscriptions, Free Trials, Server-Signed Dynamic Pricing (JWT), SnappPay BNPL (Buy Now Pay Later), and Server-Side REST API v2 validation.
+Comprehensive expert skill and developer toolkit for integrating Iranian Android app stores (**CafeBazaar** and **Myket**) into Android applications (Kotlin/Java, Capacitor, Flutter, React Native, Unity) and backend services (Node.js/Express, Python/FastAPI).
+
+Covers the complete lifecycle of app store publishing and monetization:
+- **In-App Billing (IAB):** Consumables, Non-Consumables, Auto-Renewing Subscriptions, and Free Trials.
+- **Client SDKs:** Poolakey (CafeBazaar), Myket IAB (`IabHelper`, Flutter, React Native, Unity).
+- **Multi-Store Architecture:** Unified billing interfaces, Gradle build flavors, and runtime installer detection.
+- **Backend REST APIs:** CafeBazaar REST API v2 and Myket Partner Payment & Consumption API.
+- **Store Services:** In-app updates, version check services, store intents (rate/details), and CD deployment.
+- **Advanced Monetization:** Server-signed Dynamic Pricing JWTs and SnappPay BNPL installments.
+- **Automated CLI Scaffolding:** Single-command integration tool (`scripts/integrate-store.js`).
 
 ---
 
 ## Table of Contents
 
-1. [Architecture & Core Concepts](#architecture--core-concepts)
-2. [Product Types & Monetization Matrix](#product-types--monetization-matrix)
-3. [Integration Workflows](#integration-workflows)
-   - [Consumable Purchase & Consumption](#1-consumable-flow-coins-credits-gems)
-   - [Non-Consumable Flow](#2-non-consumable-flow-remove-ads-pro-unlock)
-   - [Auto-Renewing Subscriptions & Free Trial](#3-subscription-flow-monthly--yearly)
-   - [Dynamic Pricing (تخفیف پویا) with JWT](#4-dynamic-pricing-flow-jwt)
-   - [SnappPay BNPL (خرید اعتباری اسنپ‌پی)](#5-snapppay-bnpl-overview)
-4. [Client SDK Integration (Poolakey)](#client-sdk-integration-poolakey)
-5. [Backend Server REST API v2](#backend-server-rest-api-v2)
-6. [Security, Verification & Anti-Fraud](#security-verification--anti-fraud)
-7. [Error Handling & Diagnostic Reference](#error-handling--diagnostic-reference)
-8. [Skill Resource Index](#skill-resource-index)
+1. [Quick Start CLI Command](#quick-start-cli-command)
+2. [Market Comparison Matrix](#market-comparison-matrix)
+3. [Architecture & Core Concepts](#architecture--core-concepts)
+4. [Monetization Matrix & Product Types](#monetization-matrix--product-types)
+5. [Client-Side Integration](#client-side-integration)
+   - [CafeBazaar (Poolakey SDK)](#1-cafebazaar-poolakey-sdk)
+   - [Myket (IabHelper & Plugins)](#2-myket-iab-helper--plugins)
+   - [Unified Multi-Store Pattern](#3-unified-multi-store-pattern)
+6. [Backend Server Verification APIs](#backend-server-verification-apis)
+   - [CafeBazaar REST API v2](#1-cafebazaar-rest-api-v2)
+   - [Myket Partner API](#2-myket-partner-api)
+   - [Unified Backend Verification Service](#3-unified-backend-verification-service)
+7. [Store Services & Intents](#store-services--intents)
+   - [Version Check & In-App Updates](#1-version-check--in-app-updates)
+   - [Store Intents (Rating, Comment, App Page)](#2-store-intents-rating-comment-app-page)
+   - [Multi-APK & Gradual Rollouts](#3-multi-apk--gradual-rollouts)
+8. [Advanced Features (Bazaar Dynamic Pricing & SnappPay)](#advanced-features)
+9. [Security & Anti-Fraud Best Practices](#security--anti-fraud-best-practices)
+10. [Error Codes & Diagnostics](#error-codes--diagnostics)
+11. [Skill Resource Index](#skill-resource-index)
+
+---
+
+## Quick Start CLI Command
+
+This skill includes an automated integration command located at `scripts/integrate-store.js` that automatically scaffolds store manifests, Proguard rules, dependencies, and backend verification routes into existing projects.
+
+### Command Syntax:
+```bash
+node .agents/skills/market-integrator/scripts/integrate-store.js --store=<cafebazaar|myket|dual> --platform=<android|capacitor|react-native|flutter|nodejs|python> --target-dir=<path>
+```
+
+### Common Command Examples:
+```bash
+# 1. Integrate both CafeBazaar & Myket into an existing Android project:
+node .agents/skills/market-integrator/scripts/integrate-store.js --store=dual --platform=android --target-dir=./frontend/android
+
+# 2. Add Myket billing & verification into a Node.js Express backend:
+node .agents/skills/market-integrator/scripts/integrate-store.js --store=myket --platform=nodejs --target-dir=./backend
+
+# 3. Add CafeBazaar Poolakey into a Capacitor project:
+node .agents/skills/market-integrator/scripts/integrate-store.js --store=cafebazaar --platform=capacitor --target-dir=./frontend
+
+# 4. Auto-detect project platform and setup dual store billing:
+node .agents/skills/market-integrator/scripts/integrate-store.js --store=dual
+```
+
+---
+
+## Market Comparison Matrix
+
+| Dimension | CafeBazaar (کافه‌بازار) | Myket (مایکت) |
+|---|---|---|
+| **Market Package** | `com.farsitel.bazaar` | `ir.mservices.market` |
+| **Primary Client SDK** | Poolakey (`com.github.cafebazaar.Poolakey:poolakey:2.2.0`) | Myket IAB (`IabHelper` / `myket_iap` / `react-native-myket-iab`) |
+| **Android Manifest Queries** | `ir.cafebazaar.pardakht.InAppBillingService.BIND` | `ir.mservices.market.InAppBillingService.BIND` |
+| **Billing Permission** | `com.farsitel.bazaar.permission.PAY_THROUGH_BAZAAR` | `com.android.vending.BILLING` |
+| **Server Validation Method** | `GET /devapi/v2/api/validate/<pkg>/inapp/<sku>/purchases/<token>/` | `POST /api/partners/applications/{pkg}/purchases/products/{sku}/verify` |
+| **Server Auth Header** | `CAFEBAZAAR-PISHKHAN-API-SECRET: <SECRET>` | `X-Access-Token: <TOKEN>` |
+| **Server Consumption** | `POST /devapi/v2/api/consume/<pkg>/purchases/` | `POST /api/partners/applications/{pkg}/purchases/products/{sku}/consume` |
+| **Dynamic Pricing (تخفیف پویا)** | Supported natively via Backend-Signed JWT (`HS256`) | Not supported (uses dedicated discount SKUs) |
+| **BNPL Installments** | SnappPay (automatic for purchases >20,000 Tomans) | Market wallet / banking gateways |
+| **In-App Update Support** | Store Intent / In-App Update | `MyketSupportHelper` AIDL & In-App Update SDK |
+| **Rate App Intent** | `bazaar://details?id=<pkg>` | `myket://comment?id=<pkg>` |
 
 ---
 
 ## Architecture & Core Concepts
 
-CafeBazaar In-App Billing utilizes an IPC (Inter-Process Communication) model via Android AIDL (`IInAppBillingService.aidl`). The client application communicates directly with the local CafeBazaar client app, which handles secure network transactions with CafeBazaar servers, UI dialogs, bank gateways, and wallet deductions.
+Both CafeBazaar and Myket utilize Android Inter-Process Communication (IPC) via AIDL. The mobile client binds to the local store application, which renders the payment UI and communicates with payment gateways. Validations and entitlements must be verified out-of-band by your secure backend server.
 
 ```
 +-----------------------------------------------------------------------------------+
 |                                 CLIENT DEVICE                                     |
 |                                                                                   |
 |   +--------------------------+               +--------------------------------+   |
-|   |   Your Android App       |   IPC (AIDL)  |      CafeBazaar App            |   |
-|   |  (Poolakey / BillingCore)| <===========> |    (Payment Flow & Wallet)     |   |
+|   |   Your Android App       |   IPC (AIDL)  |   CafeBazaar / Myket Client    |   |
+|   |  (Unified Billing Repo)  | <===========> |    (Payment Flow & Wallet)     |   |
 |   +--------------------------+               +--------------------------------+   |
 |                 |                                             |                   |
 +-----------------|---------------------------------------------|-------------------+
-                  | HTTPS (Receipt / Token)                     | HTTPS (Bazaar Internal)
+                  | HTTPS (Token, SKU, Store)                   | HTTPS
                   v                                             v
 +------------------------------------+         +------------------------------------+
-|        Your Backend Server         |  REST   |      CafeBazaar Servers            |
-|   - Purchase Validation            | ======> |  - https://pardakht.cafebazaar.ir  |
-|   - Dynamic Price JWT Generation   | (API v2)|  - Payment settlement & receipt db |
-|   - Content Provisioning           |         |                                    |
+|        Your Backend Server         |  REST   |      Market Billing Servers        |
+|   - Universal Verification Router  | ======> |  - pardakht.cafebazaar.ir          |
+|   - Replay Prevention (DB Index)   | (API)   |  - developer.myket.ir              |
+|   - Entitlement Provisioning       |         |                                    |
 +------------------------------------+         +------------------------------------+
 ```
 
-### Key Rules:
-1. **Digital Only:** IAB is strictly for digital goods and services delivered inside the app. Physical products and real-world services are prohibited.
-2. **Device Compatibility:** Android 2.3+ (API 9+) with CafeBazaar client app installed (covers >90% active devices in Iran).
-3. **No Direct Client-to-Bazaar Server Calls:** The mobile client never makes direct HTTP requests to Bazaar billing servers; all client communication is mediated by the CafeBazaar app.
-4. **Server Validation Mandatory:** Never grant digital goods solely based on on-device callbacks. Validate the purchase token against CafeBazaar Developer REST API v2 from your secure backend.
+### Essential Android Manifest Setup:
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Billing permissions -->
+    <uses-permission android:name="com.farsitel.bazaar.permission.PAY_THROUGH_BAZAAR" />
+    <uses-permission android:name="com.android.vending.BILLING" />
+
+    <!-- Android 11+ (API 30+) Package Queries -->
+    <queries>
+        <!-- CafeBazaar -->
+        <package android:name="com.farsitel.bazaar" />
+        <intent>
+            <action android:name="ir.cafebazaar.pardakht.InAppBillingService.BIND" />
+        </intent>
+        <!-- Myket -->
+        <package android:name="ir.mservices.market" />
+        <intent>
+            <action android:name="ir.mservices.market.InAppBillingService.BIND" />
+        </intent>
+    </queries>
+</manifest>
+```
+
+### Proguard / R8 Configuration:
+```proguard
+# Preserve AIDL Billing interfaces
+-keep class com.android.vending.billing.** { *; }
+-keep class com.github.cafebazaar.poolakey.** { *; }
+-keep class ir.mservices.market.** { *; }
+```
 
 ---
 
-## Product Types & Monetization Matrix
+## Monetization Matrix & Product Types
 
 | Product Type | Persian Term | Multi-Purchase? | Must Consume? | Persists Across Reinstalls? | Examples |
 |---|---|---|---|---|---|
@@ -68,323 +153,270 @@ CafeBazaar In-App Billing utilizes an IPC (Inter-Process Communication) model vi
 | **Subscription** | اشتراک دوره‌ای | 1 Active per app | **No** (Cannot consume) | **Yes** (during valid period) | 30/60/90/180/365-day access, VIP club |
 | **Trial Subscription** | اشتراک آزمایشی | Once per user lifetime | **No** | **Yes** (converts to paid) | 1 to 30 days free trial for new subscribers |
 
----
-
-## Integration Workflows
-
-### 1. Consumable Flow (Coins, Credits, Gems)
-
-```
-[User Clicks Buy] -> [Poolakey: purchaseProduct]
-      |
-      v
-[CafeBazaar Dialog Opens -> User Pays]
-      |
-      v
-[purchaseSucceed callback -> Obtain PurchaseEntity & purchaseToken]
-      |
-      v
-[Send purchaseToken to Backend Server]
-      |
-      v
-[Backend: GET /devapi/v2/api/validate/... -> Verify purchaseState == 0]
-      |
-      v
-[Backend or Client: POST /devapi/v2/api/consume/... -> Consume token]
-      |
-      v
-[Backend increments user coins in database & returns success to client]
-```
-
 > [!IMPORTANT]
-> Always consume consumable purchases after fulfillment! If an item is unconsumed, CafeBazaar flags the user as the current owner and blocks subsequent purchase attempts with `BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED (7)`.
-> 
-> **App Startup Sync:** On every app launch, query `getPurchasedProducts()`. If unconsumed consumables exist (e.g. user paid but app crashed before consumption), validate and consume them immediately.
+> **Zombie Purchases & App Startup Sync:** If a user pays but the app crashes before consumption, the store records the product as owned. Future attempts will fail with `BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED (7)`.
+> **Rule:** On every app launch, query all unconsumed items, validate with your backend, fulfill the order, and consume them immediately.
 
 ---
 
-### 2. Non-Consumable Flow (Remove Ads, Pro Unlock)
+## Client-Side Integration
 
-1. Check current ownership on startup via `payment.getPurchasedProducts { ... }` or backend server query.
-2. If owned (`purchaseState == 0`), unlock features.
-3. If user purchases, receive `purchaseSucceed`, validate token on backend, store entitlement in backend DB.
-4. **NEVER call `consumeProduct` on non-consumables!**
+### 1. CafeBazaar (Poolakey SDK)
 
----
-
-### 3. Subscription Flow (Monthly / Yearly)
-
-1. **Periods:** 30, 60, 90, 180, 365 days (plus 5-minute test subscriptions for development).
-2. **Single Active Subscription Rule:** Each user account can only hold **one** active subscription per application at a time.
-   - If a user upgrades (e.g., Silver to Gold), the new subscription activates immediately and remaining duration is preserved/extended according to policy.
-3. **Auto-Renewal & Low Wallet Balance Notifications:**
-   - Auto-renewed automatically from the user's CafeBazaar wallet.
-   - If wallet balance is insufficient, CafeBazaar sends SMS reminders to the user at **5 days, 3 days, and 1 day** prior to expiration.
-4. **Free Trial (اشتراک آزمایشی):**
-   - Duration: 1 to 30 days.
-   - Eligibility: Only users who have **never** previously subscribed to any plan in the app are eligible (checked via `checkTrialSubscription`).
-   - Each user can only claim a free trial **once in a lifetime**.
-5. **App Startup Verification:**
-   - Call `getSubscribedProducts()` or verify with backend API `/active-subscriptions/<token>/` on **every app launch** to catch cancellations, wallet expirations, price changes, or refunds.
-
----
-
-### 4. Dynamic Pricing Flow (تخفیف پویا - JWT)
-
-Dynamic pricing allows selling an existing SKU at a discounted price (e.g. for promotions, user segmentation, flash sales) without creating duplicate SKUs in the console.
-
-```
-[Client requests discount] ---> [Your Backend Server]
-                                       |
-                                       v
-                     [Generates & Signs JWT (HS256/384/512)]
-                     Claims: price, package_name, sku, exp, nonce
-                                       |
-                                       v
-[Client receives JWT] <----------------+
-      |
-      v
-[Poolakey: PurchaseRequest(productId, dynamicPriceToken = jwtToken)]
-      |
-      v
-[CafeBazaar App verifies JWT signature against Developer Console Secret]
-      |
-      v
-[User pays discounted price]
-```
-
-#### JWT Claims Specification:
-| Claim | Type | Required? | Description |
-|---|---|---|---|
-| `price` | Number | **Yes** | Discounted price in **Rials** (must be <= registered SKU price in panel). |
-| `package_name` | String | **Yes** | Application package name (e.g., `com.example.app`). |
-| `sku` | String | **Yes** | Product SKU identifier. |
-| `exp` | Number | **Yes** | Expiration Unix Timestamp in UTC seconds. |
-| `account_id` | String | Optional | CafeBazaar unique account ID (if using Login with Bazaar). |
-| `nonce` | String | Optional | Cryptographically random unique string to prevent replay attacks. |
-
-> [!CAUTION]
-> - Never sign or store the Dynamic Pricing Secret key on the mobile client! JWTs must be generated strictly on your backend.
-> - On subscriptions, the dynamic discount applies **only to the initial billing cycle**. Subsequent automatic renewals bill at the regular panel price.
-> - Minimum CafeBazaar client version required: `13.3.0+`.
-
----
-
-### 5. SnappPay BNPL (خرید اعتباری اسنپ‌پی)
-
-- **Default Activation:** Automatically enabled on CafeBazaar for all apps using IAB for purchases over **20,000 Tomans (200,000 Rials)**.
-- **Zero Client / SDK Changes:** Transparent to the app code. Handled entirely inside CafeBazaar checkout dialog.
-- **End-User Cost:** 0% interest or extra charge to the user.
-- **Payment Options:**
-  1. **Single Installment (تک قسط):** User pays next month.
-  2. **Four Installments (چهار قسط):** User pays across 4 monthly installments.
-
-#### Commission & Payout Calculation Formula (1,000,000 Tomans Example):
-
-$$\text{SnappPay Fee (inc. 10\% VAT)} = \text{Product Price} \times \text{Rate} \times 1.10$$
-
-| Payment Mode | Base Fee Rate | With 10% VAT | Net Base Amount | 10% General VAT | Bazaar Share (15% tier) | Developer Payout (85% tier) | Bazaar Share (30% tier) | Developer Payout (70% tier) |
-|---|---|---|---|---|---|---|---|---|
-| **1 Installment** | 4.5% | 49,500 T | 950,500 T | 95,050 T | 128,318 T | **727,133 T** | 256,635 T | **598,815 T** |
-| **4 Installments** | 9.0% | 99,000 T | 901,000 T | 90,100 T | 121,635 T | **689,265 T** | 243,270 T | **567,630 T** |
-
-*Note: Settleable funds are automatically credited to the developer's CafeBazaar balance under standard payout schedules.*
-
----
-
-## Client SDK Integration (Poolakey)
-
-### 1. Gradle Setup
-
+**Gradle Dependency:**
 ```groovy
-// In project-level build.gradle or settings.gradle
-repositories {
-    google()
-    mavenCentral()
-    maven { url 'https://jitpack.io' }
-}
-
-// In app-level build.gradle
-dependencies {
-    implementation 'com.github.cafebazaar.Poolakey:poolakey:2.2.0' // Use latest release
-}
+implementation 'com.github.cafebazaar.Poolakey:poolakey:2.2.0'
 ```
 
-### 2. Proguard / R8 Configuration
-
-Add the following keep rules to `proguard-rules.pro`:
-```proguard
-# Keep In-App Billing AIDL interface
--keep class com.android.vending.billing.** { *; }
--keep class com.github.cafebazaar.poolakey.** { *; }
-```
-
-### 3. Complete Kotlin Manager
-
-See full boilerplate in [`examples/android-kotlin/BillingRepository.kt`](references/poolakey-android-guide.md).
-
+**Kotlin Implementation:**
 ```kotlin
-class BillingManager(private val context: Context, private val activityResultRegistry: ActivityResultRegistry) {
-    private val securityCheck = SecurityCheck.Enable(rsaPublicKey = "YOUR_BAZAAR_RSA_PUBLIC_KEY")
-    private val paymentConfig = PaymentConfiguration(localSecurityCheck = securityCheck)
-    private val payment = Payment(context = context, config = paymentConfig)
-    private var paymentConnection: PaymentConnection? = null
+class BazaarBillingManager(private val context: Context, private val registry: ActivityResultRegistry) {
+    private val security = SecurityCheck.Enable(rsaPublicKey = "YOUR_BAZAAR_RSA_KEY")
+    private val payment = Payment(context = context, config = PaymentConfiguration(localSecurityCheck = security))
+    private var connection: PaymentConnection? = null
 
-    fun connect(onConnected: () -> Unit, onFailed: (Throwable) -> Unit) {
-        paymentConnection = payment.connect {
-            connectionSucceed { onConnected() }
-            connectionFailed { throwable -> onFailed(throwable) }
-            disconnected { /* Handle disconnect/reconnect */ }
+    fun connect(onReady: () -> Unit) {
+        connection = payment.connect {
+            connectionSucceed { onReady() }
+            connectionFailed { /* handle */ }
         }
     }
 
-    fun buyProduct(sku: String, payload: String, dynamicToken: String? = null, onResult: (Result<PurchaseEntity>) -> Unit) {
-        val request = PurchaseRequest(
-            productId = sku,
-            payload = payload,
-            dynamicPriceToken = dynamicToken
-        )
-        payment.purchaseProduct(
-            registry = activityResultRegistry,
-            request = request
-        ) {
-            purchaseFlowBegan { /* UI loader */ }
-            failedToBeginFlow { throwable -> onResult(Result.failure(throwable)) }
+    fun buy(sku: String, payload: String, dynamicToken: String? = null, onResult: (Result<PurchaseEntity>) -> Unit) {
+        val req = PurchaseRequest(productId = sku, payload = payload, dynamicPriceToken = dynamicToken)
+        payment.purchaseProduct(registry, req) {
             purchaseSucceed { entity -> onResult(Result.success(entity)) }
-            purchaseCanceled { onResult(Result.failure(Exception("USER_CANCELED"))) }
-            purchaseFailed { throwable -> onResult(Result.failure(throwable)) }
+            purchaseFailed { err -> onResult(Result.failure(err)) }
+            purchaseCanceled { onResult(Result.failure(Exception("CANCELED"))) }
         }
     }
 
-    fun consume(token: String, onComplete: (Boolean) -> Unit) {
+    fun consume(token: String, onDone: (Boolean) -> Unit) {
         payment.consumeProduct(token) {
-            consumeSucceed { onComplete(true) }
-            consumeFailed { onComplete(false) }
+            consumeSucceed { onDone(true) }
+            consumeFailed { onDone(false) }
         }
     }
+}
+```
 
-    fun onDestroy() {
-        paymentConnection?.disconnect()
+---
+
+### 2. Myket (IabHelper & Plugins)
+
+See complete implementation in [`references/myket-iab-guide.md`](references/myket-iab-guide.md).
+
+**Android Kotlin / Java:**
+```kotlin
+val helper = IabHelper(activity, "YOUR_MYKET_RSA_PUBLIC_KEY")
+helper.startSetup { result ->
+    if (result.isSuccess) {
+        // Query inventory on launch
+        helper.queryInventoryAsync(true, null, null) { invResult, inventory ->
+            // Process unconsumed items
+        }
+    }
+}
+
+// Purchase flow
+helper.launchPurchaseFlow(activity, sku, RC_REQUEST, { res, purchase ->
+    if (res.isSuccess && purchase != null) {
+        // Send purchase.token to your server, then consume:
+        helper.consumeAsync(purchase) { p, consumeRes -> }
+    }
+}, developerPayload)
+```
+
+**React Native (`react-native-myket-iab`):**
+```javascript
+import MyketBilling from 'react-native-myket-iab';
+
+await MyketBilling.init("MYKET_RSA_PUBLIC_KEY");
+const purchase = await MyketBilling.purchase("gem_100", payload);
+await verifyOnBackend('myket', purchase.token, "gem_100");
+await MyketBilling.consumePurchase(purchase);
+```
+
+**Flutter (`myket_iap`):**
+```dart
+import 'package:myket_iap/myket_iap.dart';
+
+await MyketIap.init(rsaPublicKey: "MYKET_RSA_PUBLIC_KEY");
+final result = await MyketIap.purchase(sku: "gem_100", developerPayload: payload);
+await MyketIap.consume(purchaseToken: result.token);
+```
+
+---
+
+### 3. Unified Multi-Store Pattern
+
+To support both stores in one app:
+1. **Build Flavors (Separate APKs):** Define `bazaar` and `myket` flavors in `build.gradle`.
+2. **Runtime Store Detection (Single APK):**
+```kotlin
+fun detectMarket(context: Context): MarketType {
+    val installer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        context.packageManager.getInstallSourceInfo(context.packageName).installingPackageName
+    } else {
+        @Suppress("DEPRECATION")
+        context.packageManager.getInstallerPackageName(context.packageName)
+    }
+
+    return when (installer) {
+        "com.farsitel.bazaar" -> MarketType.CAFEBAZAAR
+        "ir.mservices.market" -> MarketType.MYKET
+        else -> if (isInstalled(context, "com.farsitel.bazaar")) MarketType.CAFEBAZAAR else MarketType.MYKET
+    }
+}
+```
+See complete implementation in [`examples/android-kotlin/multi-store/MarketBillingRepository.kt`](examples/android-kotlin/multi-store/MarketBillingRepository.kt).
+
+---
+
+## Backend Server Verification APIs
+
+### 1. CafeBazaar REST API v2
+- **Header:** `CAFEBAZAAR-PISHKHAN-API-SECRET: <SECRET>`
+- **Validate:** `GET https://pardakht.cafebazaar.ir/devapi/v2/api/validate/<pkg>/inapp/<sku>/purchases/<token>/`
+- **Consume:** `POST https://pardakht.cafebazaar.ir/devapi/v2/api/consume/<pkg>/purchases/` (`body: {"token": "<token>"}`)
+- **Subscriptions:** `GET https://pardakht.cafebazaar.ir/devapi/v2/api/applications/<pkg>/active-subscriptions/<token>/`
+
+### 2. Myket Partner API
+- **Header:** `X-Access-Token: <TOKEN>`, `Content-Type: application/json`
+- **Verify:** `POST https://developer.myket.ir/api/partners/applications/{pkg}/purchases/products/{sku}/verify` (`body: {"tokenId": "<token>"}`)
+- **Consume:** `POST https://developer.myket.ir/api/partners/applications/{pkg}/purchases/products/{sku}/consume` (`body: {"tokenId": "<token>"}`)
+
+### 3. Unified Backend Verification Service
+See full Node.js implementation in [`examples/backend-nodejs/market-service.js`](examples/backend-nodejs/market-service.js) and Python in [`examples/backend-python/market_service.py`](examples/backend-python/market_service.py).
+
+```javascript
+const MarketService = require('./market-service');
+const marketService = new MarketService();
+
+// Single endpoint for both stores
+app.post('/api/payments/verify', async (req, res) => {
+  const { store, sku, token, payload, userId } = req.body;
+  
+  // 1. Verify developer payload (anti-tamper)
+  if (!marketService.verifyPayload(payload, userId)) {
+    return res.status(403).json({ error: 'Invalid payload' });
+  }
+
+  // 2. Query Store API
+  const result = await marketService.verifyPurchase({ store, sku, token });
+  if (result.isValid) {
+    // 3. Grant credits in DB
+    await grantCredits(userId, sku);
+    
+    // 4. Consume if consumable
+    if (!result.isConsumed) {
+      await marketService.consumePurchase({ store, sku, token });
+    }
+    return res.json({ success: true });
+  }
+  res.status(400).json({ error: 'Invalid purchase' });
+});
+```
+
+---
+
+## Store Services & Intents
+
+### 1. Version Check & In-App Updates
+- **Myket:** Use `MyketSupportHelper` (`IMyketSupportService.aidl`) to check `getAppUpdateStateAsync()`. Retrieves available version code and description.
+- **CafeBazaar:** Use standard update intents or in-app update workflows.
+
+### 2. Store Intents (Rating, Comment, App Page)
+Always wrap intent calls in a try/catch and fallback to web URLs:
+
+```java
+public static void openAppPage(Context context, String market) {
+    String uri = market.equals("myket") 
+        ? "myket://details?id=" + context.getPackageName()
+        : "bazaar://details?id=" + context.getPackageName();
+    String pkg = market.equals("myket") ? "ir.mservices.market" : "com.farsitel.bazaar";
+    
+    try {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+        intent.setPackage(pkg);
+        context.startActivity(intent);
+    } catch (ActivityNotFoundException e) {
+        String webUrl = market.equals("myket")
+            ? "https://myket.ir/app/" + context.getPackageName()
+            : "https://cafebazaar.ir/app/" + context.getPackageName();
+        context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(webUrl)));
     }
 }
 ```
 
----
-
-## Backend Server REST API v2
-
-All server API requests require the header:
-```http
-CAFEBAZAAR-PISHKHAN-API-SECRET: <YOUR_API_TOKEN_FROM_PANEL>
-```
-*Generated from: CafeBazaar Console -> Application -> API پیشخان بازار (must be created from Publisher account).*
-*Rate Limit: 50,000 requests/day per developer.*
-
-### 1. Validate In-App Purchase
-`GET https://pardakht.cafebazaar.ir/devapi/v2/api/validate/<package_name>/inapp/<product_id>/purchases/<purchase_token>/`
-
-**Response (200 OK):**
-```json
-{
-   "consumptionState": 1,
-   "purchaseState": 0,
-   "kind": "androidpublisher#inappPurchase",
-   "developerPayload": "user_id_98234",
-   "purchaseTime": 1740236400000
-}
-```
-- `purchaseState`: `0` = Valid purchase, `1` = Refunded.
-- `consumptionState`: `0` = Consumed, `1` = Unconsumed.
-
-### 2. Consume Purchase (Server-Side)
-`POST https://pardakht.cafebazaar.ir/devapi/v2/api/consume/<package_name>/purchases/`  
-**Body:** `{"token": "<purchase_token>"}`
-
-### 3. Check Active Subscriptions
-`GET https://pardakht.cafebazaar.ir/devapi/v2/api/applications/<package_name>/active-subscriptions/<token>/`
-
-**Response (200 OK):**
-```json
-{
-  "subscriptions": [
-    {
-      "kind": "androidpublisher#subscriptionPurchase",
-      "initiationTimestampMsec": 1740236400000,
-      "validUntilTimestampMsec": 1742828400000,
-      "autoRenewing": true,
-      "linkedSubscriptionToken": "sub_token_xyz",
-      "sku": "vip_monthly"
-    }
-  ]
-}
-```
-*Always verify: `validUntilTimestampMsec > System.currentTimeMillis()`.*
-
-### 4. Cancel Subscription
-`GET/POST https://pardakht.cafebazaar.ir/devapi/v2/api/applications/<package_name>/subscriptions/<subscription_id>/purchases/<purchase_token>/cancel/`
-
-### 5. Refund Purchase (Within 7 Days)
-`POST https://pardakht.cafebazaar.ir/devapi/v2/api/refund/<package_name>/purchases/<purchase_token>/`
+### 3. Multi-APK & Gradual Rollouts
+- Both stores support uploading separate APKs partitioned by **CPU Architecture (ABI)**: `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`.
+- Higher `versionCode` values must be assigned to 64-bit packages.
+- Releases can be published gradually to 10%, 25%, 50%, and 100% of users.
 
 ---
 
-## Security, Verification & Anti-Fraud
+## Advanced Features
 
-1. **Payload User Binding:** Always send a cryptographic `developerPayload` (e.g. `HMAC(userId + timestamp, secret)`) with every purchase request and verify it on your backend before fulfilling the order.
-2. **Server-Side Token Validation:** Do not trust client-side claims. Query the CafeBazaar REST API v2 from your backend server to confirm `purchaseState == 0`.
-3. **Prevent Replay Attacks:** Store used `purchaseToken` values and JWT `nonce` values in a unique database index. Reject any duplicate attempts.
-4. **Obfuscation:** Obfuscate your Android code using Proguard/R8. Never store the developer API secret or raw JWT private key in the APK.
+### 1. Dynamic Pricing JWT (CafeBazaar Only)
+Allows server-signed dynamic discounts on existing SKUs without panel modifications:
+- Algorithm: `HS256`, `HS384`, or `HS512`.
+- Claims: `price` (in Rials), `package_name`, `sku`, `exp`, `nonce`.
+- Secret: Configured in CafeBazaar Developer Console.
+- Full guide: [`references/dynamic-pricing-jwt.md`](references/dynamic-pricing-jwt.md).
+
+### 2. SnappPay BNPL (CafeBazaar Only)
+- Automatic 1-installment and 4-installment credit checkout for purchases >20,000 Tomans.
+- Zero client code changes.
+- Payout and commission formula guide: [`references/snapppay-bnpl.md`](references/snapppay-bnpl.md).
 
 ---
 
-## Error Handling & Diagnostic Reference
+## Security & Anti-Fraud Best Practices
 
-### Client AIDL / Response Codes
+1. **Server Validation Mandatory:** Never grant digital goods solely based on on-device callbacks.
+2. **Replay Protection:** Store used `token` strings in a unique database index. Reject any duplicate submissions.
+3. **Payload Binding:** Always pass a cryptographic `developerPayload` (`HMAC(userId + timestamp, secret)`) during checkout and verify it on your server.
+4. **No Secrets in APK:** Never embed Developer API Secrets, Access Tokens, or JWT private keys in the Android APK.
+5. **Obfuscation:** Obfuscate release builds with Proguard/R8.
+
+---
+
+## Error Codes & Diagnostics
+
+### Standard Billing Client Codes (AIDL)
 | Code | Constant | Meaning & Action |
 |---|---|---|
 | `0` | `BILLING_RESPONSE_RESULT_OK` | Success. |
-| `1` | `BILLING_RESPONSE_RESULT_USER_CANCELED` | User closed dialog or cancelled bank gateway. |
-| `3` | `BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE` | Bazaar app outdated or billing not supported on device. |
-| `4` | `BILLING_RESPONSE_RESULT_ITEM_UNAVAILABLE` | SKU not found in Bazaar panel or inactive. |
-| `5` | `BILLING_RESPONSE_RESULT_DEVELOPER_ERROR` | Manifest missing billing permission, wrong package name, or unconfigured app. |
-| `6` | `BILLING_RESPONSE_RESULT_ERROR` | Fatal transaction error or gateway timeout. |
-| `7` | `BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED` | Consumable item was not consumed. Must consume before re-buying. |
-| `8` | `BILLING_RESPONSE_RESULT_ITEM_NOT_OWNED` | Attempted to consume an item that is not owned by user. |
-
-### Dynamic Pricing JWT Error Codes
-| Code | Error Description | Cause / Resolution |
-|---|---|---|
-| `1` | Bazaar internal error | Send JWT token + user details to Bazaar developer support. |
-| `2` | Malformed JWT structure | Check base64url encoding and 3-segment structure (`header.payload.sig`). |
-| `3` | Unsupported algorithm | Use `HS256`, `HS384`, or `HS512`. |
-| `4` | Tampered token signature | Secret key mismatch or modified payload. |
-| `5` | Token expired | `exp` timestamp has passed. |
-| `6` | Missing mandatory field | Ensure `price`, `package_name`, `sku`, `exp` are present. |
-| `7` | `account_id` mismatch | Token was generated for a different Bazaar account ID. |
-| `8` | Product SKU not found | Verify SKU in Developer Panel. |
-| `9` | Package name not found | Check bundle ID / package name spelling. |
-| `10` | `price` > panel price | Discount price cannot exceed registered panel price. |
-| `11` | Token already used | Tokens are single-use; generate fresh token with new `nonce`. |
-| `12` | Invalid price value | Price must be positive integer in Rials. |
-| `13-16`| Type mismatch in claims | Ensure correct JSON types (`price`: number, `sku`: string, etc.). |
+| `1` | `BILLING_RESPONSE_RESULT_USER_CANCELED` | User canceled payment dialog. |
+| `3` | `BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE` | Store app outdated or billing unsupported. |
+| `4` | `BILLING_RESPONSE_RESULT_ITEM_UNAVAILABLE` | SKU not registered in developer console. |
+| `5` | `BILLING_RESPONSE_RESULT_DEVELOPER_ERROR` | Manifest missing billing permission, wrong package name, or misconfigured signature. |
+| `6` | `BILLING_RESPONSE_RESULT_ERROR` | Fatal transaction error or gateway failure. |
+| `7` | `BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED` | Consumable item not consumed. Must consume before re-purchasing. |
+| `8` | `BILLING_RESPONSE_RESULT_ITEM_NOT_OWNED` | Attempted to consume an unowned item. |
 
 ---
 
 ## Skill Resource Index
 
-Detailed in-depth guides and ready-to-run code implementations included in this skill:
-
-- **Guides & References:**
-  - [`references/iab-concepts-and-products.md`](references/iab-concepts-and-products.md) - Product lifecycle, test subscriptions (5 min), upgrade rules.
-  - [`references/poolakey-android-guide.md`](references/poolakey-android-guide.md) - Complete Android Kotlin integration, reactive flows, Unity bridge.
-  - [`references/server-rest-api-v2.md`](references/server-rest-api-v2.md) - Full REST API v2 endpoints, curl examples, responses, error tables.
-  - [`references/dynamic-pricing-jwt.md`](references/dynamic-pricing-jwt.md) - Node.js/Python generators, full error mapping (1-16).
-  - [`references/snapppay-bnpl.md`](references/snapppay-bnpl.md) - Payout calculations, VAT breakdown, settlement workflows.
+- **Guides & Specifications:**
+  - [`references/multi-store-architecture.md`](references/multi-store-architecture.md) - Unified architecture, build flavors, runtime detection.
+  - [`references/myket-iab-guide.md`](references/myket-iab-guide.md) - Complete Myket IAB client guide (Android, Flutter, React Native, Unity).
+  - [`references/myket-server-api.md`](references/myket-server-api.md) - Myket server-to-server REST API specification.
+  - [`references/myket-services-and-intents.md`](references/myket-services-and-intents.md) - Version checking, in-app updates, store intents.
+  - [`references/poolakey-android-guide.md`](references/poolakey-android-guide.md) - CafeBazaar Poolakey Android guide.
+  - [`references/server-rest-api-v2.md`](references/server-rest-api-v2.md) - CafeBazaar REST API v2 endpoints and curl references.
+  - [`references/dynamic-pricing-jwt.md`](references/dynamic-pricing-jwt.md) - Dynamic Pricing JWT generation & error codes.
+  - [`references/snapppay-bnpl.md`](references/snapppay-bnpl.md) - SnappPay settlement and payout models.
   - [`references/security-anti-fraud.md`](references/security-anti-fraud.md) - Anti-fraud, RSA validation, replay protection.
-  - [`references/troubleshooting-and-faqs.md`](references/troubleshooting-and-faqs.md) - Exhaustive FAQ answering all common developer questions.
+  - [`references/troubleshooting-and-faqs.md`](references/troubleshooting-and-faqs.md) - Frequently asked questions.
 
 - **Production Boilerplates:**
-  - [`examples/android-kotlin/BillingRepository.kt`](examples/android-kotlin/BillingRepository.kt) - Android Kotlin repository.
-  - [`examples/backend-nodejs/cafebazaar-service.js`](examples/backend-nodejs/cafebazaar-service.js) - Complete Node.js / Express backend service.
-  - [`examples/backend-python/cafebazaar_service.py`](examples/backend-python/cafebazaar_service.py) - Complete Python / FastAPI backend service.
-  - [`examples/unity/BazaarBillingManager.cs`](examples/unity/BazaarBillingManager.cs) - Unity C# script.
+  - [`scripts/integrate-store.js`](scripts/integrate-store.js) - CLI command to integrate app stores.
+  - [`examples/android-kotlin/multi-store/MarketBillingRepository.kt`](examples/android-kotlin/multi-store/MarketBillingRepository.kt) - Multi-store Kotlin billing repository.
+  - [`examples/backend-nodejs/market-service.js`](examples/backend-nodejs/market-service.js) - Unified Node.js backend validation service.
+  - [`examples/backend-nodejs/unified-server-routes.js`](examples/backend-nodejs/unified-server-routes.js) - Unified Express.js payment routes.
+  - [`examples/backend-python/market_service.py`](examples/backend-python/market_service.py) - Unified Python FastAPI service.
+  - [`examples/unity/BazaarBillingManager.cs`](examples/unity/BazaarBillingManager.cs) - Unity C# script for CafeBazaar.
+  - [`examples/unity/MyketBillingManager.cs`](examples/unity/MyketBillingManager.cs) - Unity C# script for Myket.
